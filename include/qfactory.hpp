@@ -16,7 +16,7 @@
 #include "qfusion.hpp"
 
 #if ENABLE_OPENCL
-#include "qengine_opencl.hpp"
+#include "qengine_hybrid.hpp"
 #include "qunitmulti.hpp"
 #else
 #include "qunit.hpp"
@@ -35,15 +35,15 @@ QInterfacePtr CreateQuantumInterface(
 #if ENABLE_OPENCL
     case QINTERFACE_OPENCL:
         return std::make_shared<QEngineOCL>(args...);
+    case QINTERFACE_HYBRID:
+        return std::make_shared<QEngineHybrid>(args...);
+    case QINTERFACE_QUNIT_MULTI:
+        return std::make_shared<QUnitMulti>(subengine1, subengine2, args...);
 #endif
     case QINTERFACE_QFUSION:
         return std::make_shared<QFusion>(subengine1, args...);
     case QINTERFACE_QUNIT:
         return std::make_shared<QUnit>(subengine1, subengine2, args...);
-#if ENABLE_OPENCL
-    case QINTERFACE_QUNIT_MULTI:
-        return std::make_shared<QUnitMulti>(subengine1, subengine2, args...);
-#endif
     default:
         return NULL;
     }
@@ -58,15 +58,15 @@ QInterfacePtr CreateQuantumInterface(QInterfaceEngine engine, QInterfaceEngine s
 #if ENABLE_OPENCL
     case QINTERFACE_OPENCL:
         return std::make_shared<QEngineOCL>(args...);
+    case QINTERFACE_HYBRID:
+        return std::make_shared<QEngineHybrid>(args...);
+    case QINTERFACE_QUNIT_MULTI:
+        return std::make_shared<QUnit>(subengine, args...);
 #endif
     case QINTERFACE_QFUSION:
         return std::make_shared<QFusion>(subengine, args...);
     case QINTERFACE_QUNIT:
         return std::make_shared<QUnit>(subengine, args...);
-#if ENABLE_OPENCL
-    case QINTERFACE_QUNIT_MULTI:
-        return std::make_shared<QUnit>(subengine, args...);
-#endif
     default:
         return NULL;
     }
@@ -80,6 +80,8 @@ template <typename... Ts> QInterfacePtr CreateQuantumInterface(QInterfaceEngine 
 #if ENABLE_OPENCL
     case QINTERFACE_OPENCL:
         return std::make_shared<QEngineOCL>(args...);
+    case QINTERFACE_HYBRID:
+        return std::make_shared<QEngineHybrid>(args...);
 #endif
     default:
         return NULL;

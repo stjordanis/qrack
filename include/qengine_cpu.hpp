@@ -36,6 +36,11 @@ protected:
     StateVectorPtr stateVec;
     bool isSparse;
 
+    QEngineCPU()
+    {
+        // Called by QEngineHybrid only
+    }
+
 public:
     QEngineCPU(bitLenInt qBitCount, bitCapInt initState, qrack_rand_gen_ptr rgp = nullptr,
         complex phaseFac = CMPLX_DEFAULT_ARG, bool doNorm = false, bool randomGlobalPhase = true, bool ignored = false,
@@ -149,7 +154,7 @@ public:
     /** @} */
 
 protected:
-    virtual StateVectorPtr AllocStateVec(bitCapInt elemCount);
+    virtual StateVectorPtr AllocStateVec(bitCapInt elemCount, bool ignored = false);
     virtual void ResetStateVec(StateVectorPtr sv);
 
     void DecomposeDispose(bitLenInt start, bitLenInt length, QEngineCPUPtr dest);

@@ -124,6 +124,7 @@ protected:
         const bitLenInt* controls, const bitLenInt& controlLen, const bitLenInt& target, const complex* mtrx);
     virtual void ApplyAntiControlled2x2(
         const bitLenInt* controls, const bitLenInt& controlLen, const bitLenInt& target, const complex* mtrx);
+    virtual StateVectorPtr AllocStateVec(bitCapInt elemCount, bool ignored = false) = 0;
 
     /**
      * Common driver method behind INCC and DECC

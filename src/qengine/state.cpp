@@ -845,7 +845,7 @@ void QEngineCPU::UpdateRunningNorm(real1 norm_thresh)
     runningNorm = par_norm(maxQPower, stateVec, norm_thresh);
 }
 
-StateVectorPtr QEngineCPU::AllocStateVec(bitCapInt elemCount)
+StateVectorPtr QEngineCPU::AllocStateVec(bitCapInt elemCount, bool ignored)
 {
     if (isSparse) {
         return std::make_shared<StateVectorSparse>(elemCount);

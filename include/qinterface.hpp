@@ -93,9 +93,15 @@ enum QInterfaceEngine {
      */
     QINTERFACE_QUNIT_MULTI,
 
+    /**
+     * Create a QEngineHybrid, derived from both QEngineCPU and QEngineOCL, shifting between their two modes based on a
+     * qubit threshold.
+     */
+    QINTERFACE_HYBRID,
+
     QINTERFACE_FIRST = QINTERFACE_CPU,
 #if ENABLE_OPENCL
-    QINTERFACE_OPTIMAL = QINTERFACE_OPENCL,
+    QINTERFACE_OPTIMAL = QINTERFACE_HYBRID,
 #else
     QINTERFACE_OPTIMAL = QINTERFACE_CPU,
 #endif
