@@ -709,6 +709,23 @@ bool QUnit::ForceM(bitLenInt qubit, bool res, bool doForce, bool doApply)
 bitCapInt QUnit::ForceMReg(bitLenInt start, bitLenInt length, bitCapInt result, bool doForce, bool doApply)
 {
     ToPermBasisMeasure(start, length);
+
+    if (!doApply) {
+        return QInterface::ForceMReg(start, length, result, doForce, doApply);
+    }
+
+    for (bitLenInt i = 0; i < length; i++) {
+        QEngineShard& shard = shards[start + i];
+        if (shard.IsInvertControl() && !shard.IsInvertTarget()) {
+            TransformBasis1Qb(false, start + i);
+            if (shard.isProbDirty) {
+                bool bitResult = shard.unit->ForceM(shard.mapped, (bool)(result & pow2(i)), doForce, true);
+                SeparateBit(bitResult, start + i, true);
+            }
+            ApplyBufferMap(start + i, shard.controlsShards, INVERT_AND_PHASE, true, false, {}, false);
+            ApplyBufferMap(start + i, shard.antiControlsShards, INVERT_AND_PHASE, true, true, {}, false);
+        }
+    }
     return QInterface::ForceMReg(start, length, result, doForce, doApply);
 }
 
