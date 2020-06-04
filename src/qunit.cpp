@@ -716,7 +716,7 @@ bitCapInt QUnit::ForceMReg(bitLenInt start, bitLenInt length, bitCapInt result, 
 
     for (bitLenInt i = 0; i < length; i++) {
         QEngineShard& shard = shards[start + i];
-        if (shard.IsInvertControl() && !shard.IsInvertTarget()) {
+        if (shard.IsInvertControl()) {
             TransformBasis1Qb(false, start + i);
             if (shard.isProbDirty) {
                 bool bitResult = shard.unit->ForceM(shard.mapped, (bool)(result & pow2(i)), doForce, true);
