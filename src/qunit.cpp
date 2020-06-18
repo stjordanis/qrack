@@ -1337,7 +1337,7 @@ void QUnit::CZ(bitLenInt control, bitLenInt target)
     }
 
     if (!freezeBasis) {
-        if (cShard.IsInvertControlOf(&tShard)) {
+        if (tShard.IsInvertControlOf(&cShard)) {
             std::swap(control, target);
         }
 
