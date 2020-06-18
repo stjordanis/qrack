@@ -2584,15 +2584,12 @@ void QUnit::DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt length)
 
     if (CheckBitsPermutation(inOutStart, length)) {
         bitCapInt lengthMask = pow2Mask(length);
-        bitCapInt highMask = lengthMask << length;
-        bitCapInt origRes = GetCachedPermutation(inOutStart, length) << length;
+        bitCapInt origRes = GetCachedPermutation(inOutStart, length);
+        if (origRes < lengthMask) {
+            origRes += (lengthMask - origRes) * (lengthMask + 1U);
+        }
         bitCapInt res = origRes / toDiv;
-        if ((~res & highMask) != highMask) {
-            res >>= length;
-        }
-        if (origRes == (res * toDiv)) {
-            SetReg(inOutStart, length, res);
-        }
+        SetReg(inOutStart, length, res);
         return;
     }
 

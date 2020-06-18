@@ -3003,6 +3003,14 @@ TEST_CASE_METHOD(QInterfaceTestFixture, "test_mul")
     qftReg->MUL(8, 0, 8, 8);
     REQUIRE_FLOAT(ONE_R1 / 2, qftReg->ProbAll(0));
     REQUIRE_FLOAT(ONE_R1 / 2, qftReg->ProbAll(8));
+
+    qftReg->SetPermutation(1);
+    qftReg->MUL(7, 0, 3);
+    REQUIRE_THAT(qftReg, HasProbability(0, 8, 7));
+
+    qftReg->SetPermutation(5);
+    qftReg->MUL(7, 0, 3);
+    REQUIRE_THAT(qftReg, HasProbability(0, 8, 3));
 }
 
 TEST_CASE_METHOD(QInterfaceTestFixture, "test_div")
@@ -3022,6 +3030,14 @@ TEST_CASE_METHOD(QInterfaceTestFixture, "test_div")
     qftReg->DIV(8, 0, 8, 8);
     REQUIRE_FLOAT(ONE_R1 / 2, qftReg->ProbAll(0));
     REQUIRE_FLOAT(ONE_R1 / 2, qftReg->ProbAll(1));
+
+    qftReg->SetPermutation(7);
+    qftReg->DIV(7, 0, 3);
+    REQUIRE_THAT(qftReg, HasProbability(0, 8, 1));
+
+    qftReg->SetPermutation(3);
+    qftReg->DIV(7, 0, 3);
+    REQUIRE_THAT(qftReg, HasProbability(0, 8, 5));
 }
 
 TEST_CASE_METHOD(QInterfaceTestFixture, "test_mulmodnout")
