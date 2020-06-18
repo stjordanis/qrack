@@ -1337,17 +1337,21 @@ void QUnit::CZ(bitLenInt control, bitLenInt target)
     }
 
     if (!freezeBasis) {
+        if (cShard.IsInvertControlOf(&tShard)) {
+            std::swap(control, target);
+        }
+
         TransformBasis1Qb(false, control);
 
         RevertBasis2Qb(control, ONLY_INVERT, ONLY_TARGETS, CTRL_AND_ANTI);
 
-        if (cShard.IsInvertControlOf(&tShard)) {
+        if (shards[target].IsInvertControlOf(&(shards[control]))) {
             TransformBasis1Qb(false, target);
         }
 
         RevertBasis2Qb(target, ONLY_INVERT, ONLY_TARGETS, CTRL_AND_ANTI, {}, { control });
 
-        tShard.AddPhaseAngles(&cShard, ONE_CMPLX, -ONE_CMPLX);
+        shards[target].AddPhaseAngles(&(shards[control]), ONE_CMPLX, -ONE_CMPLX);
         return;
     }
 
@@ -1632,10 +1636,22 @@ void QUnit::ApplyControlledSinglePhase(const bitLenInt* cControls, const bitLenI
             return;
         }
 
+        if (IS_ARG_0(topLeft) && tShard.IsInvertControlOf(&(shards[control]))) {
+            std::swap(control, target);
+        }
+
         TransformBasis1Qb(false, control);
 
+        if (shards[target].IsInvertControlOf(&(shards[control]))) {
+            TransformBasis1Qb(false, target);
+        }
+
         RevertBasis2Qb(control, ONLY_INVERT, ONLY_TARGETS, CTRL_AND_ANTI);
-        RevertBasis2Qb(target, ONLY_INVERT, IS_ONE_CMPLX(topLeft) ? ONLY_TARGETS : CONTROLS_AND_TARGETS, CTRL_AND_ANTI);
+        if (IS_ONE_CMPLX(topLeft)) {
+            RevertBasis2Qb(target, ONLY_INVERT, ONLY_TARGETS, CTRL_AND_ANTI, {}, { control });
+        } else {
+            RevertBasis2Qb(target, ONLY_INVERT, CONTROLS_AND_TARGETS, CTRL_AND_ANTI);
+        }
 
         shards[target].AddPhaseAngles(&(shards[control]), topLeft, bottomRight);
         delete[] controls;
@@ -1717,11 +1733,22 @@ void QUnit::ApplyAntiControlledSinglePhase(const bitLenInt* cControls, const bit
             return;
         }
 
+        if (IS_ARG_0(bottomRight) && tShard.IsInvertAntiControlOf(&(shards[control]))) {
+            std::swap(control, target);
+        }
+
         TransformBasis1Qb(false, control);
 
+        if (shards[target].IsInvertAntiControlOf(&(shards[control]))) {
+            TransformBasis1Qb(false, target);
+        }
+
         RevertBasis2Qb(control, ONLY_INVERT, ONLY_TARGETS, CTRL_AND_ANTI);
-        RevertBasis2Qb(
-            target, ONLY_INVERT, IS_ONE_CMPLX(bottomRight) ? ONLY_TARGETS : CONTROLS_AND_TARGETS, CTRL_AND_ANTI);
+        if (IS_ARG_0(bottomRight)) {
+            RevertBasis2Qb(target, ONLY_INVERT, ONLY_TARGETS, CTRL_AND_ANTI, {}, { control });
+        } else {
+            RevertBasis2Qb(target, ONLY_INVERT, CONTROLS_AND_TARGETS, CTRL_AND_ANTI);
+        }
 
         shards[target].AddAntiPhaseAngles(&(shards[control]), bottomRight, topLeft);
         delete[] controls;
