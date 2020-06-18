@@ -1741,6 +1741,29 @@ void QEngineOCL::DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt carryStart
     MULx(OCL_API_DIV, (bitCapIntOcl)toDiv, inOutStart, carryStart, length);
 }
 
+/** Multiply by integer */
+void QEngineOCL::MUL(bitCapInt toMul, bitLenInt inOutStart, bitLenInt length)
+{
+    bitCapIntOcl lowPower = pow2Ocl(length);
+    toMul &= (lowPower - ONE_BCI);
+    if (toMul == 0) {
+        SetReg(inOutStart, length, 0);
+        return;
+    }
+
+    MULx(OCL_API_MUL_SHORT, (bitCapIntOcl)toMul, inOutStart, length);
+}
+
+/** Divide by integer */
+void QEngineOCL::DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt length)
+{
+    if (toDiv == 0) {
+        throw "DIV by zero";
+    }
+
+    MULx(OCL_API_DIV_SHORT, (bitCapIntOcl)toDiv, inOutStart, length);
+}
+
 /** Multiplication modulo N by integer, (out of place) */
 void QEngineOCL::MULModNOut(bitCapInt toMul, bitCapInt modN, bitLenInt inStart, bitLenInt outStart, bitLenInt length)
 {
@@ -1929,6 +1952,17 @@ void QEngineOCL::MULx(
 
     bitCapIntOcl bciArgs[BCI_ARG_LEN] = { maxQPowerOcl >> (bitCapIntOcl)length, toMod, inOutMask, carryMask, otherMask,
         length, inOutStart, carryStart, skipMask, 0 };
+
+    xMULx(api_call, bciArgs, NULL);
+}
+
+void QEngineOCL::MULx(OCLAPI api_call, bitCapIntOcl toMod, const bitLenInt inOutStart, const bitLenInt length)
+{
+    bitCapIntOcl intMask = pow2Mask(length);
+    bitCapIntOcl inOutMask = intMask << inOutStart;
+    bitCapIntOcl otherMask = (maxQPower - ONE_BCI) ^ inOutMask;
+    bitCapIntOcl bciArgs[BCI_ARG_LEN] = { maxQPowerOcl, toMod, inOutMask, intMask, otherMask, length, inOutStart, 0, 0,
+        0 };
 
     xMULx(api_call, bciArgs, NULL);
 }

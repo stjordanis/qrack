@@ -2526,6 +2526,29 @@ void QUnit::MUL(bitCapInt toMul, bitLenInt inOutStart, bitLenInt carryStart, bit
     DirtyShardRange(carryStart, length);
 }
 
+void QUnit::MUL(bitCapInt toMul, bitLenInt inOutStart, bitLenInt length)
+{
+    // Keep the bits separate, if cheap to do so:
+    if (toMul == 0U) {
+        SetReg(inOutStart, length, 0U);
+        return;
+    } else if (toMul == ONE_BCI) {
+        return;
+    }
+
+    if (CheckBitsPermutation(inOutStart, length)) {
+        bitCapInt lengthMask = pow2Mask(length);
+        bitCapInt res = GetCachedPermutation(inOutStart, length) * toMul;
+        SetReg(inOutStart, length, res & lengthMask);
+        return;
+    }
+
+    // Otherwise, form the potentially entangled representation:
+    EntangleRange(inOutStart, length);
+    shards[inOutStart].unit->MUL(toMul, shards[inOutStart].mapped, length);
+    DirtyShardRange(inOutStart, length);
+}
+
 void QUnit::DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt carryStart, bitLenInt length)
 {
     // Keep the bits separate, if cheap to do so:
@@ -2550,6 +2573,33 @@ void QUnit::DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt carryStart, bit
     shards[inOutStart].unit->DIV(toDiv, shards[inOutStart].mapped, shards[carryStart].mapped, length);
     DirtyShardRange(inOutStart, length);
     DirtyShardRange(carryStart, length);
+}
+
+void QUnit::DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt length)
+{
+    // Keep the bits separate, if cheap to do so:
+    if (toDiv == ONE_BCI) {
+        return;
+    }
+
+    if (CheckBitsPermutation(inOutStart, length)) {
+        bitCapInt lengthMask = pow2Mask(length);
+        bitCapInt highMask = lengthMask << length;
+        bitCapInt origRes = GetCachedPermutation(inOutStart, length) << length;
+        bitCapInt res = origRes / toDiv;
+        if ((~res & highMask) != highMask) {
+            res >>= length;
+        }
+        if (origRes == (res * toDiv)) {
+            SetReg(inOutStart, length, res);
+        }
+        return;
+    }
+
+    // Otherwise, form the potentially entangled representation:
+    EntangleRange(inOutStart, length);
+    shards[inOutStart].unit->DIV(toDiv, shards[inOutStart].mapped, length);
+    DirtyShardRange(inOutStart, length);
 }
 
 void QUnit::xMULModNOut(

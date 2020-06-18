@@ -372,6 +372,53 @@ void QEngineCPU::DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt carryStart
         [](const bitCapInt& orig, const bitCapInt& mul) { return orig; }, toDiv, inOutStart, carryStart, length);
 }
 
+void QEngineCPU::MULDIV(
+    const IOFn& inFn, const IOFn& outFn, const bitCapInt& toMul, const bitLenInt& inOutStart, const bitLenInt& length)
+{
+    bitCapInt intMask = pow2Mask(length);
+    bitCapInt inOutMask = intMask << inOutStart;
+    bitCapInt otherMask = (maxQPower - ONE_BCI) ^ inOutMask;
+
+    StateVectorPtr nStateVec = AllocStateVec(maxQPower);
+    nStateVec->clear();
+    stateVec->isReadLocked = false;
+
+    par_for(0, maxQPower, [&](const bitCapInt lcv, const int cpu) {
+        bitCapInt otherRes = lcv & otherMask;
+        bitCapInt mulRes = otherRes | (((((lcv & inOutMask) >> inOutStart) * toMul) & intMask) << inOutStart);
+        nStateVec->write(outFn(lcv, mulRes), stateVec->read(inFn(lcv, mulRes)));
+    });
+
+    ResetStateVec(nStateVec);
+}
+
+void QEngineCPU::MUL(bitCapInt toMul, bitLenInt inOutStart, bitLenInt length)
+{
+    if (toMul == 0) {
+        SetReg(inOutStart, length, 0);
+        return;
+    }
+    if (toMul == ONE_BCI) {
+        return;
+    }
+
+    MULDIV([](const bitCapInt& orig, const bitCapInt& mul) { return orig; },
+        [](const bitCapInt& orig, const bitCapInt& mul) { return mul; }, toMul, inOutStart, length);
+}
+
+void QEngineCPU::DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt length)
+{
+    if (toDiv == 0) {
+        throw "DIV by zero";
+    }
+    if (toDiv == ONE_BCI) {
+        return;
+    }
+
+    MULDIV([](const bitCapInt& orig, const bitCapInt& mul) { return mul; },
+        [](const bitCapInt& orig, const bitCapInt& mul) { return orig; }, toDiv, inOutStart, length);
+}
+
 void QEngineCPU::CMULDIV(const IOFn& inFn, const IOFn& outFn, const bitCapInt& toMul, const bitLenInt& inOutStart,
     const bitLenInt& carryStart, const bitLenInt& length, const bitLenInt* controls, const bitLenInt controlLen)
 {

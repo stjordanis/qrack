@@ -1141,6 +1141,26 @@ void kernel mul(global cmplx* stateVec, constant bitCapInt* bitCapIntPtr, global
     }
 }
 
+void kernel mulshort(global cmplx* stateVec, constant bitCapInt* bitCapIntPtr, global cmplx* nStateVec)
+{
+    bitCapInt Nthreads, lcv;
+
+    Nthreads = get_global_size(0);
+    bitCapInt maxI = bitCapIntPtr[0];
+    bitCapInt toMul = bitCapIntPtr[1];
+    bitCapInt inOutMask = bitCapIntPtr[2];
+    bitCapInt intMask = bitCapIntPtr[3];
+    bitCapInt otherMask = bitCapIntPtr[4];
+    bitCapInt len = bitCapIntPtr[5];
+    bitCapInt inOutStart = bitCapIntPtr[6];
+    bitCapInt otherRes, mulRes;
+    for (lcv = ID; lcv < maxI; lcv += Nthreads) {
+        otherRes = lcv & otherMask;
+        mulRes = otherRes | (((((lcv & inOutMask) >> inOutStart) * toMul) & intMask) << inOutStart);
+        nStateVec[mulRes] = stateVec[lcv];
+    }
+}
+
 void kernel div(global cmplx* stateVec, constant bitCapInt* bitCapIntPtr, global cmplx* nStateVec)
 {
     bitCapInt Nthreads, lcv;
@@ -1167,6 +1187,26 @@ void kernel div(global cmplx* stateVec, constant bitCapInt* bitCapIntPtr, global
         otherRes = i & otherMask;
         outInt = ((i & inOutMask) >> inOutStart) * toDiv;
         nStateVec[i] = stateVec[((outInt & lowMask) << inOutStart) | (((outInt & highMask) >> len) << carryStart) | otherRes];
+    }
+}
+
+void kernel divshort(global cmplx* stateVec, constant bitCapInt* bitCapIntPtr, global cmplx* nStateVec)
+{
+    bitCapInt Nthreads, lcv;
+
+    Nthreads = get_global_size(0);
+    bitCapInt maxI = bitCapIntPtr[0];
+    bitCapInt toMul = bitCapIntPtr[1];
+    bitCapInt inOutMask = bitCapIntPtr[2];
+    bitCapInt intMask = bitCapIntPtr[3];
+    bitCapInt otherMask = bitCapIntPtr[4];
+    bitCapInt len = bitCapIntPtr[5];
+    bitCapInt inOutStart = bitCapIntPtr[6];
+    bitCapInt otherRes, mulRes;
+    for (lcv = ID; lcv < maxI; lcv += Nthreads) {
+        otherRes = lcv & otherMask;
+        mulRes = otherRes | (((((lcv & inOutMask) >> inOutStart) * toMul) & intMask) << inOutStart);
+        nStateVec[lcv] = stateVec[mulRes];
     }
 }
 

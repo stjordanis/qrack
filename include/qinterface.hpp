@@ -1558,8 +1558,13 @@ public:
     /** Multiply by integer */
     virtual void MUL(bitCapInt toMul, bitLenInt inOutStart, bitLenInt carryStart, bitLenInt length) = 0;
 
-    /** Divide by integer */
+    /** (Phase-coded) multiply by integer */
+    virtual void MUL(bitCapInt toMul, bitLenInt inOutStart, bitLenInt length) = 0;
+
     virtual void DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt carryStart, bitLenInt length) = 0;
+
+    /** (Phase-coded) divide by integer */
+    virtual void DIV(bitCapInt toDiv, bitLenInt inOutStart, bitLenInt length) = 0;
 
     /** Multiplication modulo N by integer, (out of place) */
     virtual void MULModNOut(
